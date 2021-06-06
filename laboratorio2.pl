@@ -15,9 +15,7 @@ socialNetwork(Name,Date,SOut):-
 date(Day,Month,Year,OutDate):-
      OutDate = [Day,Month,Year].
 
-registroUsuario(NameU,Password,Registro):-
-    Registro = [NameU,Password].
-
+registroUsuario(Fecha,NameU,Password, [Fecha,NameU,Password]).
 
 
 %selectores TDA socialNetwork.
@@ -34,25 +32,24 @@ getPassword([_|[Password|_]],Password).
 
 
 
-
-socialNetworkRegister(SocialNet,Name,Password,SocialNet2):-
+socialNetworkRegister(ListaI,Fecha,Name,Password,Lista2):-
+    getRegister(ListaI,Registro),
+    getName(ListaI,NameSocial),
+    getDate(ListaI,Date),
+    Registro == [],
+     !,
+    true,
+    Lista2 = [NameSocial,Date,[[Fecha,Name,Password]],[],[],[]],
+    true.
+socialNetworkRegister(SocialNet,FechaInicio,Name,Password,SocialNet2):-
+    getRegister(SocialNet,Registro),
+    not(elementoEnLista(Registro,Name)),
     getName(SocialNet,NombreRed),
     getDate(SocialNet,Fecha),
-    getRegister(SocialNet,Registro),
-    registroUsuario(Name,Password,ListaUsuario),
-    socialNetwork(NombreRed,Fecha,SocialNet2),
-    getRegister(SocialNet2,Registro2),
-    append(Registro2,ListaUsuario,SocialNet2).
-socialNetworkRegister(SocialNet,Name,Password,SocialNet2):-
-    getRegister(SocialNet,Registro),
-    getName(SocialNet,NombreRed),
-    getDate(SocialNet,Date),
-    not(elementoEnLista(Registro,Name)),
-    registroUsuario(Name,Password,ListaUsuario),
-    socialNetwork(NombreRed,Date,SocialNet2),
-    getRegister(SocialNet,Registro2),
-    append(Registro2,ListaUsuario,SocialNet2).
-
+    registroUsuario(FechaInicio,Name,Password,ListaUsuario),
+    append(Registro,[ListaUsuario],Registro2),!,
+    SocialNet2 = [NombreRed,Fecha,Registro2,[],[],[]],
+    true.
 
 
 
@@ -62,4 +59,29 @@ socialNetworkRegister(SocialNet,Name,Password,SocialNet2):-
  * Recorrido: Booleano
  */
 elementoEnLista([],_):- false, !.
-elementoEnLista([[X|_]|Y],Elemento):- X = Elemento; elementoEnLista(Y,Elemento).
+elementoEnLista([[_,X,_]|Y],Elemento):- X = Elemento; elementoEnLista(Y,Elemento).
+%---------------------
+/* Funcion auxRegis: Añade el usuario nuevo a la lista de usuarios con su respectiva contraseña.
+ * Dominio: Lista x Lista
+ * Recorrido: Lista
+ */
+
+auxRegis(Usuario,[],Usuario):-!.
+auxRegis(Lista,[CabezaUsu|ColaF],ListaSalida):-
+        auxRegis2(Lista,[CabezaUsu|ColaF],ListaSalida),!.
+
+/* Funcion auxRegis2: Revisa si un elemento esta en la lista, si no esta lo añade, de lo contrario responde con un false.
+ * Dominio: Lista x String
+ * Recorrido: Lista or false.
+ */
+
+auxRegis2(ListaM,[Cabeza|Cola],ListaActualizado):-
+    getName(ListaM,Lista),
+    not(elementoEnLista(Lista,Cabeza)),
+    agregarElemento(ListaM,[Cabeza|Cola],ListaActualizado),!.
+
+
+agregarElemento(Lista,Elemento,ListaNueva):-
+   append(Lista,[Elemento],ListaNueva).
+
+
