@@ -4,7 +4,7 @@
  * Name = string. date = lista de enteros.
 */
 socialNetwork(Name,Date,SOut):-
-    SOut = [Name,Date,[],[],[],[]].
+    SOut = [Name,Date,[],[],[],[],[]].
 
 
 /*TDA socialNetwork: Lista de enteros con el dia el mes y el año.
@@ -22,34 +22,61 @@ registroUsuario(Fecha,NameU,Password, [Fecha,NameU,Password]).
 getName([Name|_],Name).
 getDate([_|[Date|_]],Date).
 getRegister([_|[_|[Registro|_]]],Registro).
-getPost([_|[_|[_|[Post|_]]]],Post).
-getFollow([_|[_|[_|[_|[Follow|_]]]]],Follow).
-getShare([_|[_|[_|[_|[_|[Share|_]]]]]],Share).
+getUsuarioA([_|[_|[_|[UsuarioA|_]]]],UsuarioA).
+getPost([_|[_|[_|[_|[Post|_]]]]],Post).
+getFollow([_|[_|[_|[_|[_|[Follow|_]]]]]],Follow).
+getShare([_|[_|[_|[_|[_|[_|[Share|_]]]]]]],Share).
+
 
 %selectores TDA registroUsuario.
 getNameU([NameU|_],NameU).
 getPassword([_|[Password|_]],Password).
 
-
+%-----------------------------------------------------------------
 
 socialNetworkRegister(ListaI,Fecha,Name,Password,Lista2):-
     getRegister(ListaI,Registro),
     getName(ListaI,NameSocial),
+    getUsuarioA(ListaI,UsuarioA),
+    getPost(ListaI,Posteo),
+    getFollow(ListaI,Follow),
+    getShare(ListaI,Share),
     getDate(ListaI,Date),
     Registro == [],
      !,
-    true,
-    Lista2 = [NameSocial,Date,[[Fecha,Name,Password]],[],[],[]],
-    true.
+    Lista2 = [NameSocial,Date,[[Fecha,Name,Password]],UsuarioA,Posteo,Follow,Share].
 socialNetworkRegister(SocialNet,FechaInicio,Name,Password,SocialNet2):-
     getRegister(SocialNet,Registro),
     not(elementoEnLista(Registro,Name)),
     getName(SocialNet,NombreRed),
     getDate(SocialNet,Fecha),
+    getUsuarioA(SocialNet,UsuarioA),
+    getPost(SocialNet,Posteo),
+    getFollow(SocialNet,Follow),
+    getShare(SocialNet,Share),
     registroUsuario(FechaInicio,Name,Password,ListaUsuario),
     append(Registro,[ListaUsuario],Registro2),!,
-    SocialNet2 = [NombreRed,Fecha,Registro2,[],[],[]],
-    true.
+    SocialNet2 = [NombreRed,Fecha,Registro2,UsuarioA,Posteo,Follow,Share].
+
+%----------------------------------------------------------------------
+
+socialNetworkLogin(SocialNet, _, _,_):-
+     getRegister(SocialNet,Registro),
+     Registro == [],
+     !,false.
+socialNetworkLogin(SocialNet,Name,Password,SocialNet2):-
+    getRegister(SocialNet,Registro),
+    existeUsuario(Registro,Name,Password),
+    getUsuarioA(SocialNet,UsuarioA),
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,Fecha),
+    getPost(SocialNet,Posteo),
+    getFollow(SocialNet,Follow),
+    getShare(SocialNet,Share),
+    append(UsuarioA,["Usuario Activo",Name],UsuarioActivo),!,
+    SocialNet2 =[NombreRed,Fecha,Registro,UsuarioActivo,Posteo,Follow,Share].
+
+
 
 
 
@@ -60,28 +87,11 @@ socialNetworkRegister(SocialNet,FechaInicio,Name,Password,SocialNet2):-
  */
 elementoEnLista([],_):- false, !.
 elementoEnLista([[_,X,_]|Y],Elemento):- X = Elemento; elementoEnLista(Y,Elemento).
-%---------------------
-/* Funcion auxRegis: Añade el usuario nuevo a la lista de usuarios con su respectiva contraseña.
- * Dominio: Lista x Lista
- * Recorrido: Lista
- */
 
-auxRegis(Usuario,[],Usuario):-!.
-auxRegis(Lista,[CabezaUsu|ColaF],ListaSalida):-
-        auxRegis2(Lista,[CabezaUsu|ColaF],ListaSalida),!.
-
-/* Funcion auxRegis2: Revisa si un elemento esta en la lista, si no esta lo añade, de lo contrario responde con un false.
- * Dominio: Lista x String
- * Recorrido: Lista or false.
- */
-
-auxRegis2(ListaM,[Cabeza|Cola],ListaActualizado):-
-    getName(ListaM,Lista),
-    not(elementoEnLista(Lista,Cabeza)),
-    agregarElemento(ListaM,[Cabeza|Cola],ListaActualizado),!.
+existeUsuario([],_,_):- false, !.
+existeUsuario([[_,X,Z]|Y],Elemento,Elemento2):- X = Elemento, Z = Elemento2; existeUsuario(Y,Elemento,Elemento2).
 
 
-agregarElemento(Lista,Elemento,ListaNueva):-
-   append(Lista,[Elemento],ListaNueva).
+
 
 
