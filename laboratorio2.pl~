@@ -32,6 +32,18 @@ getShare([_|[_|[_|[_|[_|[_|[Share|_]]]]]]],Share).
 getNameU([NameU|_],NameU).
 getPassword([_|[Password|_]],Password).
 
+%-------------------------------------
+%############BASE DE CONOCIMIENTOS: RED SOCIAL##################
+% socialNetwork("Facebook",[5,10,2020],[["luis","pass"],["karla","pass2"],["javiera","pass3"],["marco","pass4"]],[],[]).
+%
+%
+%
+
+
+
+
+%-------------------------------------
+
 %-----------------------------------------------------------------
 
 socialNetworkRegister(ListaI,Fecha,Name,Password,Lista2):-
@@ -80,24 +92,27 @@ socialNetworkLogin(SocialNet,Name,Password,SocialNet2):-
 
 
 % ------------------------------------------------------------------------
-socialNetworkPos(SocialNet,_,_,_,_):-
+
+socialNetworkPost(SocialNet,_,_,_,_):-
     getUsuarioA(SocialNet,UsuarioA),
     UsuarioA == [],
     !,
     false.
+
 socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getPost(SocialNet,Post),
+    getUsuarioA(SocialNet,UsuarioA),
     Post == [],
     !,
     getRegister(SocialNet,Registro),
     getUsers(Registro,[],Registro2),
-    existeContacto(Registro2,UsuarioA),
+    existeContacto(Registro2,ListaUsuarios),
     obtenerCola(UsuarioA,NombreUsuario),
     getName(SocialNet,NombreRed),
     getDate(SocialNet,FechaS),
     getFollow(SocialNet,Follow),
     getShare(SocialNet,Share),
-    SocialNet2 = [NombreRed,FechaS, Registro,[],[[Fecha,NombreUsuario,Contenido,ListaUsuarios]],Follow,Share].
+    SocialNet2 = [NombreRed,FechaS, Registro,[],[[Fecha,NombreUsuario,Contenido,ListaUsuarios]],Follow,Share],!.
 
 socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getRegister(SocialNet,Registro),
@@ -105,7 +120,8 @@ socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     existeContacto(Registro2,ListaUsuarios),
     getUsuarioA(SocialNet,UsuarioA),
     getPost(SocialNet,Post),
-    obtenerCola(UsuarioA,NombreUsuario),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
     getRegister(SocialNet,Registro),
     getName(SocialNet,NombreRed),
     getDate(SocialNet,FechaS),
@@ -144,7 +160,7 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
     obtenerElemento(Cola,NombreUsuario),
     getPost(SocialNet,Post),
     getShare(SocialNet,Share),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "Ahora sigue A ", Username]],Share].
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "Ahora sigue A ", Username]],Share],!.
  socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getUsuarioA(SocialNet,UsuarioA),
    obtenerCola(UsuarioA,Cola),
@@ -157,7 +173,7 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getFollow(SocialNet,Follow),
    getShare(SocialNet,Share),
    append(Follow,[[NombreUsuario, " Ahora sigue A ",Username]],Follow2),
-   SocialNet2 = [NombreRed,FechaS,Register,[],Post,Follow2,Share].
+   SocialNet2 = [NombreRed,FechaS,Register,[],Post,Follow2,Share],!.
 
 
 

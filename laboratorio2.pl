@@ -32,6 +32,18 @@ getShare([_|[_|[_|[_|[_|[_|[Share|_]]]]]]],Share).
 getNameU([NameU|_],NameU).
 getPassword([_|[Password|_]],Password).
 
+%-------------------------------------
+%############BASE DE CONOCIMIENTOS: RED SOCIAL##################
+% socialNetwork("Facebook",[5,10,2020],[["luis","pass"],["karla","pass2"],["javiera","pass3"],["marco","pass4"]],[],[]).
+%
+%
+%
+
+
+
+
+%-------------------------------------
+
 %-----------------------------------------------------------------
 
 socialNetworkRegister(ListaI,Fecha,Name,Password,Lista2):-
@@ -80,19 +92,23 @@ socialNetworkLogin(SocialNet,Name,Password,SocialNet2):-
 
 
 % ------------------------------------------------------------------------
-socialNetworkPos(SocialNet,_,_,_,_):-
+
+socialNetworkPost(SocialNet,_,_,_,_):-
     getUsuarioA(SocialNet,UsuarioA),
     UsuarioA == [],
     !,
     false.
+
 socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getPost(SocialNet,Post),
+    getUsuarioA(SocialNet,UsuarioA),
     Post == [],
     !,
     getRegister(SocialNet,Registro),
     getUsers(Registro,[],Registro2),
-    existeContacto(Registro2,UsuarioA),
-    obtenerCola(UsuarioA,NombreUsuario),
+    existeContacto(Registro2,ListaUsuarios),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
     getName(SocialNet,NombreRed),
     getDate(SocialNet,FechaS),
     getFollow(SocialNet,Follow),
@@ -105,7 +121,8 @@ socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     existeContacto(Registro2,ListaUsuarios),
     getUsuarioA(SocialNet,UsuarioA),
     getPost(SocialNet,Post),
-    obtenerCola(UsuarioA,NombreUsuario),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
     getRegister(SocialNet,Registro),
     getName(SocialNet,NombreRed),
     getDate(SocialNet,FechaS),
