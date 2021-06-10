@@ -58,7 +58,8 @@ socialNetworkRegister(SocialNet,FechaInicio,Name,Password,SocialNet2):-
     append(Registro,[ListaUsuario],Registro2),!,
     SocialNet2 = [NombreRed,Fecha,Registro2,UsuarioA,Posteo,Follow,Share].
 
-%----------------------------------------------------------------------
+% ------------------------------------------------------------------------
+
 
 socialNetworkLogin(SocialNet, _, _,_):-
      getRegister(SocialNet,Registro),
@@ -78,9 +79,41 @@ socialNetworkLogin(SocialNet,Name,Password,SocialNet2):-
 
 
 
+% ------------------------------------------------------------------------
+
+socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
+    getPost(SocialNet,Post),
+    getUsuarioA(SocialNet,UsuarioA),
+    Post == [],
+    UsuarioA == [],
+     !,
+    getRegister(SocialNet,Registro),
+    getUsers(Registro,[],Registro2),
+    existeContacto(Registro2,UsuarioA),
+    obtenerCola(UsuarioA,NombreUsuario),
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,FechaS),
+    getFollow(SocialNet,Follow),
+    getShare(SocialNet,Share),
+    SocialNet2 = [NombreRed,FechaS, Registro,[],[[Fecha,NombreUsuario,Contenido,ListaUsuarios]],Follow,Share].
+
+socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
+    getRegister(SocialNet,Registro),
+    getUsers(Registro,[],Registro2),
+    existeContacto(Registro2,ListaUsuarios),
+    getUsuarioA(SocialNet,UsuarioA),
+    getPost(SocialNet,Post),
+    obtenerCola(UsuarioA,NombreUsuario),
+    getRegister(SocialNet,Registro),
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,FechaS),
+    getFollow(SocialNet,Follow),
+    getShare(SocialNet,Share),
+    append(Post,[[Fecha,NombreUsuario,Contenido,ListaUsuarios]],PostFinal),
+    SocialNet2 = [NombreRed,FechaS, Registro,[],PostFinal,Follow,Share].
 
 
- %----------------
+ %--------------------------------------------------------------------------------
  /* Función elementoEnLista: Verifica si un elemento esta en la lista.
  * Dominio: Lista x elemento
  * Recorrido: Booleano
@@ -92,6 +125,15 @@ existeUsuario([],_,_):- false, !.
 existeUsuario([[_,X,Z]|Y],Elemento,Elemento2):- X = Elemento, Z = Elemento2; existeUsuario(Y,Elemento,Elemento2).
 
 
+obtenerCola([_|X],Elemento):- X = Elemento,!.
 
 
+existeContacto(_,[]):- !.
+existeContacto(Usuarios,[C|T]):-
+    member(C,Usuarios),
+    existeContacto(Usuarios,T),!.
+
+getUsers([],Lista,Lista).
+getUsers([[_,User,_]|Us],Lista,[User|Resultado]):-
+	getUsers(Us,Lista,Resultado).
 
