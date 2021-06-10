@@ -80,13 +80,15 @@ socialNetworkLogin(SocialNet,Name,Password,SocialNet2):-
 
 
 % ------------------------------------------------------------------------
-
+socialNetworkPos(SocialNet,_,_,_,_):-
+    getUsuarioA(SocialNet,UsuarioA),
+    UsuarioA == [],
+    !,
+    false.
 socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getPost(SocialNet,Post),
-    getUsuarioA(SocialNet,UsuarioA),
     Post == [],
-    UsuarioA == [],
-     !,
+    !,
     getRegister(SocialNet,Registro),
     getUsers(Registro,[],Registro2),
     existeContacto(Registro2,UsuarioA),
@@ -114,6 +116,53 @@ socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
 
 
  %--------------------------------------------------------------------------------
+
+socialNetworkFollow(SocialNet,UserName,_):-
+    getUsuarioA(SocialNet,UsuarioA),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
+    NombreUsuario == UserName,
+    !,
+    false;
+    UserName == "",
+    !,
+    false;
+    getUsuarioA(SocialNet,UsuarioA),
+    UsuarioA == [],
+    !,
+    false.
+socialNetworkFollow(SocialNet,Username,SocialNet2):-
+    getFollow(SocialNet,Follow),
+    Follow == [],
+    !,
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,FechaS),
+    getRegister(SocialNet,Registro),
+    elementoEnLista(Registro,Username),
+    getUsuarioA(SocialNet,UsuarioA),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
+    getPost(SocialNet,Post),
+    getShare(SocialNet,Share),
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "Ahora sigue A ", Username]],Share].
+ socialNetworkFollow(SocialNet,Username,SocialNet2):-
+   getUsuarioA(SocialNet,UsuarioA),
+   obtenerCola(UsuarioA,Cola),
+   obtenerElemento(Cola,NombreUsuario),
+   getRegister(SocialNet,Register),
+   elementoEnLista(Register,Username),
+   getName(SocialNet,NombreRed),
+   getDate(SocialNet,FechaS),
+   getPost(SocialNet,Post),
+   getFollow(SocialNet,Follow),
+   getShare(SocialNet,Share),
+   append(Follow,[[NombreUsuario, " Ahora sigue A ",Username]],Follow2),
+   SocialNet2 = [NombreRed,FechaS,Register,[],Post,Follow2,Share].
+
+
+
+
+
  /* Función elementoEnLista: Verifica si un elemento esta en la lista.
  * Dominio: Lista x elemento
  * Recorrido: Booleano
@@ -126,7 +175,8 @@ existeUsuario([[_,X,Z]|Y],Elemento,Elemento2):- X = Elemento, Z = Elemento2; exi
 
 
 obtenerCola([_|X],Elemento):- X = Elemento,!.
-obtenerCabeza([X|_],Elemento):- X = Elemento,!.
+obtenerElemento([X],Elemento):- X = Elemento,!.
+
 
 
 existeContacto(_,[]):- !.
