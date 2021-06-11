@@ -34,14 +34,8 @@ getPassword([_|[Password|_]],Password).
 
 %-------------------------------------
 %############BASE DE CONOCIMIENTOS: RED SOCIAL##################
-% socialNetwork("Facebook",[5,10,2020],[["luis","pass"],["karla","pass2"],["javiera","pass3"],["marco","pass4"]],[],[]).
-%
-%
-%
-
-
-
-
+%socialNetwork("Facebook",[5,10,2020],SocialNetwork1):-
+    %SocialNetwork1 = [[["luis","pass"],["karla","pass2"],["javiera","pass3"],["marco","pass4"]],[],[[[9,12,2019],"luis","primer post para todos",[]],[[9,12,2019],"luis","post para karla y javiera",[karla,javiera]],[[9,12,2019],"karla","primer post para luis",[luis]]],[["luis","Ahora sigue A","karla"]],[]].
 %-------------------------------------
 
 %-----------------------------------------------------------------
@@ -113,7 +107,7 @@ socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getDate(SocialNet,FechaS),
     getFollow(SocialNet,Follow),
     getShare(SocialNet,Share),
-    SocialNet2 = [NombreRed,FechaS, Registro,[],[[Fecha,NombreUsuario,Contenido,ListaUsuarios]],Follow,Share],!.
+    SocialNet2 = [NombreRed,FechaS, Registro,[],[[1,Fecha,NombreUsuario,Contenido,ListaUsuarios]],Follow,Share],!.
 
 socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getRegister(SocialNet,Registro),
@@ -128,8 +122,11 @@ socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getDate(SocialNet,FechaS),
     getFollow(SocialNet,Follow),
     getShare(SocialNet,Share),
-    append(Post,[[Fecha,NombreUsuario,Contenido,ListaUsuarios]],PostFinal),
-    SocialNet2 = [NombreRed,FechaS, Registro,[],PostFinal,Follow,Share].
+    my_last_element(Post,ListaNu),
+    obtenerCabeza(ListaNu,Numero),
+    sumarDosNumeros(Numero,1,NumeroFinal),
+    append(Post,[[NumeroFinal,Fecha,NombreUsuario,Contenido,ListaUsuarios]],PostFinal),
+    SocialNet2 = [NombreRed,FechaS, Registro,[],PostFinal,Follow,Share],!.
 
 
  %--------------------------------------------------------------------------------
@@ -176,6 +173,34 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
    append(Follow,[[NombreUsuario, " Ahora sigue A ",Username]],Follow2),
    SocialNet2 = [NombreRed,FechaS,Register,[],Post,Follow2,Share],!.
 
+% -----------------------------------------------------------------------
+%
+socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
+    getShare(SocialNet,Share),
+
+    Share == [],
+    !,
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,FechaS),
+    getRegister(SocialNet,Registro),
+    getUsers(Registro,[],Registro2),
+    existeContacto(Registro2,Destinatarios),
+    getFollow(SocialNet,Follow),
+    getUsuarioA(SocialNet,UsuarioA),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
+    getPost(SocialNet,Post),
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,[[]]],!.
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -193,6 +218,7 @@ existeUsuario([[_,X,Z]|Y],Elemento,Elemento2):- X = Elemento, Z = Elemento2; exi
 
 obtenerCola([_|X],Elemento):- X = Elemento,!.
 obtenerElemento([X],Elemento):- X = Elemento,!.
+obtenerCabeza([X|_],Elemento):- X =Elemento,!.
 
 
 
@@ -205,3 +231,9 @@ getUsers([],Lista,Lista).
 getUsers([[_,User,_]|Us],Lista,[User|Resultado]):-
 	getUsers(Us,Lista,Resultado).
 
+sumarDosNumeros(X,Y,Z):- Z is X + Y.
+
+my_last_element([Y], Y).
+
+my_last_element([_|Xs], Y):-
+          my_last_element(Xs, Y).
