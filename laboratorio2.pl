@@ -177,10 +177,13 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
 %
 socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     getShare(SocialNet,Share),
-
+    getPost(SocialNet,Post),
+    idEnLista(Post,PostId,ListaContenidoPost),
     Share == [],
     !,
     getName(SocialNet,NombreRed),
+    obtenerCabeza(ListaContenidoPost,Cabeza),
+    obtenerCola(ListaContenidoPost,ColaU),
     getDate(SocialNet,FechaS),
     getRegister(SocialNet,Registro),
     getUsers(Registro,[],Registro2),
@@ -189,8 +192,30 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     getUsuarioA(SocialNet,UsuarioA),
     obtenerCola(UsuarioA,Cola),
     obtenerElemento(Cola,NombreUsuario),
+    obtenerElemento(ColaU,Publi),
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,[[Cabeza,Publi,"->",[Fecha,NombreUsuario,Destinatarios]]] ],!.
+socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
+    getShare(SocialNet,Share),
     getPost(SocialNet,Post),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,[[]]],!.
+    idEnLista(Post,PostId,ListaContenidoPost),
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,FechaS),
+    getRegister(SocialNet,Registro),
+    getUsers(Registro,[],Registro2),
+    existeContacto(Registro2,Destinatarios),
+    getFollow(SocialNet,Follow),
+    getShare(SocialNet,Share),
+    getUsuarioA(SocialNet,UsuarioA),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
+    obtenerCabeza(ListaContenidoPost,Cabeza),
+    obtenerCola(ListaContenidoPost,ColaU),
+    obtenerElemento(ColaU,Publi),
+    Lista2 = [Fecha,NombreUsuario,Destinatarios],
+    ShareF = [Cabeza,Publi,"->",Lista2],
+    append(Share,[ShareF],ShareFinal),
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,ShareFinal],!.
+
 
 
 
@@ -211,6 +236,10 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
  */
 elementoEnLista([],_):- false, !.
 elementoEnLista([[_,X,_]|Y],Elemento):- X = Elemento; elementoEnLista(Y,Elemento).
+
+idEnLista([],_,_):- false, !.
+idEnLista([[X,_,Z,O,_]|W],Elemento,Lista):- X = Elemento,Lista = [Z,O]; idEnLista(W,Elemento,Lista).
+
 
 existeUsuario([],_,_):- false, !.
 existeUsuario([[_,X,Z]|Y],Elemento,Elemento2):- X = Elemento, Z = Elemento2; existeUsuario(Y,Elemento,Elemento2).
