@@ -158,7 +158,7 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
     obtenerElemento(Cola,NombreUsuario),
     getPost(SocialNet,Post),
     getShare(SocialNet,Share),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "\n      Ahora sigue A: ", Username]],Share],!.
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "\n      sigue a: ", Username]],Share],!.
  socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getUsuarioA(SocialNet,UsuarioA),
    obtenerCola(UsuarioA,Cola),
@@ -170,7 +170,7 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getPost(SocialNet,Post),
    getFollow(SocialNet,Follow),
    getShare(SocialNet,Share),
-   append(Follow,[[NombreUsuario, "\n      Ahora sigue a: ",Username]],Follow2),
+   append(Follow,[[NombreUsuario, "\n      sigue a: ",Username]],Follow2),
    SocialNet2 = [NombreRed,FechaS,Register,[],Post,Follow2,Share],!.
 
 % -----------------------------------------------------------------------
@@ -183,7 +183,7 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     !,
     getName(SocialNet,NombreRed),
     obtenerCabeza(ListaContenidoPost,Cabeza),
-    obtenerCola(ListaContenidoPost,ColaU),
+    obtenerMedio(ListaContenidoPost,NombrePosteador,Publi),
     getDate(SocialNet,FechaS),
     getRegister(SocialNet,Registro),
     getUsers(Registro,[],Registro2),
@@ -192,8 +192,7 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     getUsuarioA(SocialNet,UsuarioA),
     obtenerCola(UsuarioA,Cola),
     obtenerElemento(Cola,NombreUsuario),
-    obtenerElemento(ColaU,Publi),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,[[Cabeza,Publi,"->",[Fecha,NombreUsuario,Destinatarios]]] ],!.
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,[[Cabeza,NombrePosteador,Publi,"Compartido: \n",Fecha,NombreUsuario,Destinatarios]] ],!.
 socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     getShare(SocialNet,Share),
     getPost(SocialNet,Post),
@@ -209,10 +208,8 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     obtenerCola(UsuarioA,Cola),
     obtenerElemento(Cola,NombreUsuario),
     obtenerCabeza(ListaContenidoPost,Cabeza),
-    obtenerCola(ListaContenidoPost,ColaU),
-    obtenerElemento(ColaU,Publi),
-    Lista2 = [Fecha,NombreUsuario,Destinatarios],
-    ShareF = [Cabeza,Publi,"->",Lista2],
+    obtenerMedio(ListaContenidoPost,NombrePosteador,Publi),
+    ShareF = [Cabeza,NombrePosteador,Publi,"Compartido: \n",Fecha,NombreUsuario,Destinatarios],
     append(Share,[ShareF],ShareFinal),
     SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,ShareFinal],!.
 
@@ -228,6 +225,8 @@ socialNetworkToString(SocialNet,SocialNet2):-
     getDate(SocialNet,Date),
     getRegister(SocialNet,Register),
     getFollow(SocialNet,Follow),
+    getPost(SocialNet,Post),
+    getShare(SocialNet,Share),
     lista2String(Date,DateString),
     string_concat("\n#### Nombre de la red social: ",NombreRed,String1),string_concat(String1," ####\n",String2),
     string_concat(String2,"####Creación de la red social: ",String3),string_concat(String3,DateString,String4),
@@ -236,7 +235,31 @@ socialNetworkToString(SocialNet,SocialNet2):-
     register2String(Register,Follow,RegisterString),
     string_concat(String6,RegisterString,String7),
     string_concat(String7,"------------------------------------------------\n",String8),
-    string_concat(String8,"**************PUBLICACIONES*********************\n",String9).
+    string_concat(String8,"**************PUBLICACIONES*********************\n",String9),
+    post2String(Post,Share,PostString),
+    string_concat(String9,PostString,String10),
+    string_concat(String10,"*************FIN PUBLICACIONES*****************\n",SocialNet2),!.
+
+socialNetworkToString(SocialNet,SocialNet2):-
+    getUsuarioA(SocialNet,UsuarioA),
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,Date),
+    getRegister(SocialNet,Register),
+    getFollow(SocialNet,Follow),
+    getPost(SocialNet,Post),
+    getShare(SocialNet,Share),
+    lista2String(Date,DateString),
+    string_concat("\n#### Nombre de la red social: ",NombreRed,String1),string_concat(String1," ####\n",String2),
+    string_concat(String2,"####Creación de la red social: ",String3),string_concat(String3,DateString,String4),
+    string_concat(String4,"####\n",String5),
+    string_concat(String5,"*** Usuarios Con sesión iniciada ***\n",String6),
+    register2String(UsuarioA,Follow,RegisterString),
+    string_concat(String6,RegisterString,String7),
+    string_concat(String7,"------------------------------------------------\n",String8),
+    string_concat(String8,"**************PUBLICACIONES*********************\n",String9),
+    post2String(Post,Share,PostString),
+    string_concat(String9,PostString,String10),
+    string_concat(String10,"*************FIN PUBLICACIONES*****************\n",SocialNet2).
 
 
 
@@ -258,8 +281,15 @@ followEnLista([],_,_):- false, !.
 followEnLista([[X,Y,Z]|W],Elemento,Lista):- X = Elemento,Lista = [X,Y,Z]; followEnLista(W,Elemento,Lista).
 
 
+shareEnLista([],_,_,_):- false, !.
+shareEnLista([[X,_,_,M,N,B,V]|W],Elemento,String,Lista):- X = Elemento,String = M,Lista = [N,B,V]; shareEnLista(W,Elemento,String,Lista).
+
+
+
+
+
 idEnLista([],_,_):- false, !.
-idEnLista([[X,_,Z,O,_]|W],Elemento,Lista):- X = Elemento,Lista = [Z,O]; idEnLista(W,Elemento,Lista).
+idEnLista([[X,_,Z,O,_]|W],Elemento,Lista):- X = Elemento,Lista = [X,Z,O]; idEnLista(W,Elemento,Lista).
 
 
 existeUsuario([],_,_):- false, !.
@@ -277,17 +307,66 @@ lista2String([CabezaArch|ColaArch],Lista):-
     string_concat("",CabezaArch,String),lista2String(ColaArch,String2),string_concat(String,String2,Lista).
 
 
+
+
+
 register2String([],_,""):-!.
 register2String([[_,CabezaArch,_|_]|ColaArch],Follow,Lista):-
     Follow == [],
-    string_concat(CabezaArch,"\n      Ahora sigue a: \n",String),register2String(ColaArch,Follow,String2),string_concat(String,String2,Lista),!.
+    string_concat(CabezaArch,"\n      sigue a: \n",String),register2String(ColaArch,Follow,String2),string_concat(String,String2,Lista),!.
 register2String([[_,CabezaArch,_]|ColaArch],Follow,Lista):-
     followEnLista(Follow,CabezaArch,ListaFollow),
     obtenerCabeza(ListaFollow,X),
     obtenerMedio(ListaFollow,Y,Z),
     string_concat(X,Y,String),string_concat(String,Z,String2),string_concat(String2,"\n\n",String3),register2String(ColaArch,Follow,String4),string_concat(String3,String4,Lista),!;
-    string_concat(CabezaArch,"\n      Ahora sigue a: \n",Strings),register2String(ColaArch,Follow,Strings2),string_concat(Strings,Strings2,Lista),!.
+    string_concat(CabezaArch,"\n      sigue a: \n",Strings),register2String(ColaArch,Follow,Strings2),string_concat(Strings,Strings2,Lista),!.
 
+
+post2String(Post,_,Lista):-
+    Post == [],
+    string_concat("\n","\n",Lista),!.
+post2String([[CabezaArch,Dia,Nombre,Publicacion,Destinatarios]|ColaArch],Share,Lista):-
+    shareEnLista(Share,CabezaArch,Compartido,ListaShare),
+    obtenerCabeza(ListaShare,X),
+    obtenerMedio(ListaShare,Y,Z),
+    lista2String(Z,CompartidosHacia),
+    lista2String(Dia,Date),
+    lista2String(X,DateShare),
+    verificarVacio(Destinatarios,Destinatarios,StringDest),
+    string_concat("ID: ",CabezaArch,String),string_concat(String,"\nEl dia ",String2),string_concat(String2,Date,String3),
+    string_concat(String3," ",String4),string_concat(String4,Nombre,String5),string_concat(String5," publico:\n",String6),
+    string_concat(String6,"    ",String7),string_concat(String7,Publicacion,String8),
+    string_concat(String8,"\n",String9),string_concat(String9,"Destinatarios: ",String10),
+    string_concat(String10,StringDest,String11),string_concat(String11,"\n",String12),
+    string_concat(String12,Compartido,String13),string_concat(String13,"    ",String14),
+    string_concat(String14,"El día ",String15),string_concat(String15,DateShare,String16),
+    string_concat(String16," por ",String17),string_concat(String17,Y,String18),
+    string_concat(String18," hacia: ",String19),string_concat(String19,CompartidosHacia,String20),
+    post2String(ColaArch,Share,String21),string_concat(String20,String21,Lista),!;
+
+    verificarVacio(Destinatarios,Destinatarios,StringDest2),
+    lista2String(Dia,Date2),
+    string_concat("ID: ",CabezaArch,Strings),string_concat(Strings,"\nEl dia ",Strings2),string_concat(Strings2,Date2,Strings3),
+    string_concat(Strings3," ",Strings4),string_concat(Strings4,Nombre,Strings5),string_concat(Strings5," publico:\n",Strings6),
+    string_concat(Strings6,"    ",Strings7),string_concat(Strings7,Publicacion,Strings8),
+    string_concat(Strings8,"\n",Strings9),string_concat(Strings9,"Destinatarios: ",Strings10),
+    string_concat(Strings10,StringDest2,Strings11),string_concat(Strings11,"\n",Strings12),
+    post2String(ColaArch,Share,Strings13),string_concat(Strings12,Strings13,Lista),!.
+
+
+
+verificarVacio(ListaI,Igual,ListaF):-
+    Igual == [],
+    ListaI == [],
+    !,
+    string_concat(" Todos","\n",ListaF),!.
+
+verificarVacio(ListaI,_,ListaF):-
+    ListaI == [],
+    string_concat("","\n",ListaF),!.
+
+verificarVacio([Cabeza|Cola],Igual,ListaF):-
+    string_concat(Cabeza," ",String),verificarVacio(Cola,Igual,String2),string_concat(String,String2,ListaF),!.
 
 
 
