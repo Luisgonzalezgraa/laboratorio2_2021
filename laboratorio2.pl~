@@ -261,11 +261,13 @@ Ejemplo de uso:
 
 socialNetworkToString(SocialNet,SocialNet2):-
     getUsuarioA(SocialNet,UsuarioA),
-    UsuarioA == [],
+    UsuarioA == [],!,
     getName(SocialNet,NombreRed),
     getDate(SocialNet,Date),
     getRegister(SocialNet,Register),
+    getUsers(Register,[],Register2),
     getFollow(SocialNet,Follow),
+    getFollow(SocialNet,Follow2),
     getPost(SocialNet,Post),
     getShare(SocialNet,Share),
     lista2String(Date,DateString),
@@ -273,7 +275,7 @@ socialNetworkToString(SocialNet,SocialNet2):-
     string_concat(String2,"####Creaci髇 de la red social: ",String3),string_concat(String3,DateString,String4),
     string_concat(String4,"####\n",String5),
     string_concat(String5,"*** Usuarios Registrados ***\n",String6),
-    register2String(Register,Follow,RegisterString),
+    register2String(Follow,Follow2,Register2,RegisterString),
     string_concat(String6,RegisterString,String7),
     string_concat(String7,"------------------------------------------------\n",String8),
     string_concat(String8,"**************PUBLICACIONES*********************\n",String9),
@@ -295,18 +297,19 @@ socialNetworkToString(SocialNet,SocialNet2):-
     string_concat(String2,"####Creaci髇 de la red social: ",String3),string_concat(String3,DateString,String4),
     string_concat(String4,"####\n",String5),
     string_concat(String5,"*** Usuarios Con sesi髇 iniciada ***\n",String6),
-    register2String2(NombreUsuario,Follow,RegisterString),
-    string_concat(String6,RegisterString,String7),
-    string_concat(String7,"------------------------------------------------\n",String8),
-    string_concat(String8,"**************PUBLICACIONES*********************\n",String9),
+    string_concat(String6,Usuario,String7),
+    follow2String2(Follow,Usuario,RegisterString),
+    string_concat(String7,RegisterString,String8),
+    string_concat(String8,"------------------------------------------------\n",String9),
+    string_concat(String9,"**************PUBLICACIONES*********************\n",String10),
     post2String2(Post,Usuario,PostString),
-    string_concat(String9,PostString,String10),
-    string_concat(String10,"------------------------------------------------\n",String11),
-    string_concat(String11,"**************PUBLICACIONES COMPARTIDAS*********************\n",String12),
+    string_concat(String10,PostString,String11),
+    string_concat(String11,"------------------------------------------------\n",String12),
+    string_concat(String12,"**************PUBLICACIONES COMPARTIDAS*********************\n",String13),
     share2String(Share,Usuario,ShareString),
-    string_concat(String12,ShareString,String13),
-    string_concat(String13,"**************FIN PUBLICACIONES COMPARTIDAS*********************\n",String14),
-    string_concat(String14,"------------------------------------------------\n",SocialNet2).
+    string_concat(String13,ShareString,String14),
+    string_concat(String14,"**************FIN PUBLICACIONES COMPARTIDAS*********************\n",String15),
+    string_concat(String15,"------------------------------------------------\n",SocialNet2).
 
 
 
@@ -322,14 +325,6 @@ socialNetworkToString(SocialNet,SocialNet2):-
  */
 elementoEnLista([],_):- false, !.
 elementoEnLista([[_,X,_]|Y],Elemento):- X = Elemento; elementoEnLista(Y,Elemento).
-
- /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
- */
-
-followEnLista([],_,_):- false, !.
-followEnLista([[X,Y,Z]|W],Elemento,Lista):- X = Elemento,!,Lista = [X,Y,Z], followEnLista(W,Elemento,Lista).
 
  /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
  * Dominio: Lista x elemento
@@ -385,36 +380,9 @@ lista2String([],"").
 lista2String([CabezaArch|ColaArch],Lista):-
     string_concat("",CabezaArch,String),lista2String(ColaArch,String2),string_concat(String,String2,Lista).
 
- /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
- */
-register2String2([],_,""):-!.
-register2String2([CabezaArch|Cola],Follow,Lista):-
-    Follow == [],
-    string_concat(CabezaArch,"\n      sigue a: \n",String),register2String2(Cola,Follow,String2),string_concat(String,String2,Lista),!.
-register2String2([CabezaArch|Cola],Follow,Lista):-
-    followEnLista(Follow,CabezaArch,ListaFollow),
-    obtenerCabeza(ListaFollow,X),
-    obtenerMedio(ListaFollow,Y,Z),
-    string_concat(X,Y,String),string_concat(String,Z,String2),string_concat(String2,"\n\n",String3),register2String2(Cola,Follow,String4),string_concat(String3,String4,Lista),!;
-    string_concat(CabezaArch,"\n      sigue a: \n",Strings),register2String2(Cola,Follow,Strings2),string_concat(Strings,Strings2,Lista),!.
 
 
- /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
- */
-register2String([],_,""):-!.
-register2String([[_,CabezaArch,_|_]|ColaArch],Follow,Lista):-
-    Follow == [],
-    string_concat(CabezaArch,"\n      sigue a: \n",String),register2String(ColaArch,Follow,String2),string_concat(String,String2,Lista),!.
-register2String([[_,CabezaArch,_]|ColaArch],Follow,Lista):-
-    followEnLista(Follow,CabezaArch,ListaFollow),
-    obtenerCabeza(ListaFollow,X),
-    obtenerMedio(ListaFollow,Y,Z),
-    string_concat(X,Y,String),string_concat(String,Z,String2),string_concat(String2,"\n\n",String3),register2String(ColaArch,Follow,String4),string_concat(String3,String4,Lista),!;
-    string_concat(CabezaArch,"\n      sigue a: \n",Strings),register2String(ColaArch,Follow,Strings2),string_concat(Strings,Strings2,Lista),!.
+
 
 
  /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
@@ -471,6 +439,37 @@ post2String2([[CabezaArch,Dia,Nombre,Publicacion,Destinatarios]|Cola],UsuarioAct
     string_concat(String6,"    ",String7),string_concat(String7,Publicacion,String8),
     string_concat(String8,"\n",String9),string_concat(String9,"Destinatarios: ",String10),
     string_concat(String10,StringDest,String11),string_concat(String11,"\n",String12),post2String2(Cola,UsuarioActivo,String13),string_concat(String12,String13,Lista),!.
+
+ /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento
+ * Recorrido: Booleano
+ */
+
+register2String(_,_,[],"").
+register2String([],Follow2,[_|Colaa],Lista):- register2String(Follow2,Follow2,Colaa,Lista).
+register2String([[NombreSeguidor,SigueA,_]|Cola],Follow2,[Cabeza|Colaa],Lista):-
+    NombreSeguidor \= Cabeza,
+    string_concat(NombreSeguidor,SigueA,String),string_concat(String,"",String2),string_concat(String2,"\n\n",String3),register2String(Cola,Follow2,Colaa,String4),string_concat(String3,String4,Lista).
+register2String([[NombreSeguidor,SigueA,NombreSeguid]|ColaA],Follow2,Register,Lista):-
+    obtenerCabeza(Register,Cabeza),
+    NombreSeguidor == Cabeza,
+    string_concat(NombreSeguidor,SigueA,String),string_concat(String,NombreSeguid,String2),string_concat(String2,"\n\n",String3),register2String(ColaA,Follow2,Register,String4),string_concat(String3,String4,Lista).
+
+
+ /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento
+ * Recorrido: Booleano
+ */
+follow2String2(Follow,_,Lista):-
+    Follow == [],
+    string_concat("\n","\n",Lista),!.
+follow2String2([[Nombre,_,_]|Cola],NombreUsuario,Lista):-
+    Nombre \= NombreUsuario,
+    follow2String2(Cola,NombreUsuario,Lista).
+follow2String2([[Nombre,SigueA,NombreSeguido]|Cola],NombreUsuario,Lista):-
+    Nombre == NombreUsuario,
+    string_concat("",SigueA,String),string_concat(String,NombreSeguido,String2),string_concat(String2,"\n\n",String3),follow2String2(Cola,NombreUsuario,String4),string_concat(String3,String4,Lista),!.
+
 
  /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
  * Dominio: Lista x elemento
@@ -540,3 +539,43 @@ my_last_element([Y], Y).
 
 my_last_element([_|Xs], Y):-
           my_last_element(Xs, Y).
+/*
+ * ##################### EJEMPLOS DE USO ##########################
+ *
+ * ------------Ejemplo 1--------------
+ * date(05,10,2021,D1),socialNetwork("Facebook",D1,S1),socialNetworkRegister(S1,"25-05-202","luis","jas",S2),
+socialNetworkRegister(S2,"22-03-2020","Carlos","sds",S3),socialNetworkRegister(S3,"22-03-2020","Javiera","hola",S4),
+socialNetworkLogin(S4,"luis","jas",S5),
+socialNetworkPost(S5,D1,"PRIMER POST",["Carlos","Javiera"],S6),socialNetworkLogin(S6,"Carlos","sds",S7),
+socialNetworkPost(S7,D1,"SegundoPost",[],S8),socialNetworkLogin(S8,"luis","jas",S9),
+socialNetworkShare(S9,D1,2,["Carlos"],S10),socialNetworkLogin(S10,"luis","jas",S11),
+socialNetworkFollow(S11,"Carlos",S12),socialNetworkLogin(S12,"luis","jas",S13),socialNetworkFollow(S13,"Javiera",S14),
+socialNetworkLogin(S14,"luis","jas",S15),
+socialNetworkPost(S15,D1,"TERCER POST",[],S16),socialNetworkLogin(S16,"luis","jas",S17),
+socialNetworkToString(S17,S18),write(S18).
+--------------- Ejemplo 2 ----------------------
+date(05,10,2021,D1),socialNetwork("Facebook",D1,S1),socialNetworkRegister(S1,"25-05-202","luis","jas",S2),
+socialNetworkRegister(S2,"22-03-2020","Carlos","sds",S3),socialNetworkRegister(S3,"22-03-2020","Javiera","hola",S4),
+socialNetworkLogin(S4,"luis","jas",S5),
+socialNetworkPost(S5,D1,"PRIMER POST",["Carlos","Javiera"],S6),socialNetworkLogin(S6,"Carlos","sds",S7),
+socialNetworkPost(S7,D1,"SegundoPost",[],S8),socialNetworkLogin(S8,"luis","jas",S9),
+socialNetworkShare(S9,D1,2,["Carlos"],S10),socialNetworkLogin(S10,"luis","jas",S11),
+socialNetworkFollow(S11,"Carlos",S12),socialNetworkLogin(S12,"luis","jas",S13),socialNetworkFollow(S13,"Javiera",S14),
+socialNetworkLogin(S14,"luis","jas",S15),
+socialNetworkPost(S15,D1,"TERCER POST",[],S16),socialNetworkLogin(S16,"luis","jas",S17),
+socialNetworkToString(S17,S18),write(S18),getPost(S16,Post),getShare(S16,Share).
+
+------------------Ejemplo 3 ----------------------
+date(05,10,2021,D1),socialNetwork("Facebook",D1,S1),socialNetworkRegister(S1,"25-05-202","luis","jas",S2),
+socialNetworkRegister(S2,"22-03-2020","Carlos","sds",S3),socialNetworkRegister(S3,"22-03-2020","Javiera","hola",S4),
+socialNetworkLogin(S4,"luis","jas",S5),
+socialNetworkPost(S5,D1,"PRIMER POST",["Carlos","Javiera"],S6),socialNetworkLogin(S6,"Carlos","sds",S7),
+socialNetworkPost(S7,D1,"SegundoPost",[],S8),socialNetworkLogin(S8,"luis","jas",S9),
+socialNetworkShare(S9,D1,2,["Carlos"],S10),socialNetworkLogin(S10,"luis","jas",S11),
+socialNetworkFollow(S11,"Carlos",S12),socialNetworkLogin(S12,"luis","jas",S13),socialNetworkFollow(S13,"Javiera",S14),
+socialNetworkLogin(S14,"luis","jas",S15),
+socialNetworkPost(S15,D1,"TERCER POST",[],S16),socialNetworkLogin(S16,"luis","jas",S17),
+socialNetworkToString(S17,S18),write(S18),getPost(S16,Post),getShare(S16,Share).
+
+*/
+
