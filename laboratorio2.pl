@@ -28,14 +28,11 @@ getFollow([_|[_|[_|[_|[_|[Follow|_]]]]]],Follow).
 getShare([_|[_|[_|[_|[_|[_|[Share|_]]]]]]],Share).
 
 
-%selectores TDA registroUsuario.
-getNameU([NameU|_],NameU).
-getPassword([_|[Password|_]],Password).
 
 %-------------------------------------
 %############BASE DE CONOCIMIENTOS: RED SOCIAL##################
 %socialNetwork("Facebook",[5,10,2020],SocialNetwork1):-
-    %SocialNetwork1 = [[["luis","pass"],["karla","pass2"],["javiera","pass3"],["marco","pass4"]],[],[[[9,12,2019],"luis","primer post para todos",[]],[[9,12,2019],"luis","post para karla y javiera",[karla,javiera]],[[9,12,2019],"karla","primer post para luis",[luis]]],[["luis"," sigue a","karla"]],[]].
+    %SocialNetwork1 = [[["luis","pass"],["karla","pass2"],["javiera","pass3"],["marco","pass4"]],[],[[1,[9,12,2019],"luis","primer post para todos",[]],[2,[9,12,2019],"luis","post para karla y javiera",[karla,javiera]],[3,[9,12,2019],"karla","primer post para luis",[luis]]],[["luis"," sigue a","karla"]],[["luis", "\n      sigue a: ", ["karla", "javiera"]], ["javiera", "\n      sigue a: ", ["luis"]]][[1, "luis", "primer post para todos", "Compartido: \n", [5, "/", 10,"/",2021], "javiera", ["karla"]]]].
 %-------------------------------------
 
 /*----------------------------------------------------------------
@@ -72,12 +69,13 @@ socialNetworkRegister(SocialNet,FechaInicio,Name,Password,SocialNet2):-
 
 
 /*----------------------------------------------------------------
-Predicado socialNetworkRegister: Registra a un nuevo usuario en la
-plataforma.
-Dom: socialNetworw X string X string
+Predicado socialNetworkLogin: Verifica si existe el usuario en la
+plataforma para poder iniciar su sesion.
+Dom: socialNetworw X string X string x socialNetwork
 Rec: socialNetworw
 Recursion: Natural
 Ejemplo de uso:
+socialNetworkLogin(SocialNetwork1,"luis","pass",SocialNetwork2).
  */
 
 
@@ -100,12 +98,15 @@ socialNetworkLogin(SocialNet,Name,Password,SocialNet2):-
 
 
 /*----------------------------------------------------------------
-Predicado socialNetworkRegister: Registra a un nuevo usuario en la
-plataforma.
-Dom: socialNetworw X string X string
+Predicado socialNetworkPost: Predicado que ayuda a que un usuario con
+sesion inicada pueda hacer una publicacion en la plataforma.
+Dom: socialNetworw X date X string x list x socialNetwork
 Rec: socialNetworw
-Recursion: Natural
+Recursion:
+Natural
 Ejemplo de uso:
+socialNetworkPost(SocialNet,[10,"/",05,"/",2020],"primer
+post",["karla"],SocialNet2).
  */
 
 socialNetworkPost(SocialNet,_,_,_,_):-
@@ -150,12 +151,12 @@ socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     SocialNet2 = [NombreRed,FechaS, Registro,[],PostFinal,Follow,Share],!.
 
 /*----------------------------------------------------------------
-Predicado socialNetworkRegister: Registra a un nuevo usuario en la
-plataforma.
-Dom: socialNetworw X string X string
+Predicado socialNetworkFollow: Predicado que sirve para que un usuario
+con sesion activa en la plataforma, pueda seguir a otro usuario.
+Dom: socialNetworw X string X socialNetwork
 Rec: socialNetworw
 Recursion: Natural
-Ejemplo de uso:
+Ejemplo de uso: socialNetworkFollow(SocialNet,"karla",SocialNetwork2).
  */
 
 socialNetworkFollow(SocialNet,UserName,_):-
@@ -185,7 +186,7 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
     obtenerElemento(Cola,NombreUsuario),
     getPost(SocialNet,Post),
     getShare(SocialNet,Share),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "\n      sigue a: ", Username]],Share],!.
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "\n      sigue a: ", [Username]]],Share],!.
  socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getUsuarioA(SocialNet,UsuarioA),
    obtenerCola(UsuarioA,Cola),
@@ -196,17 +197,39 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getDate(SocialNet,FechaS),
    getPost(SocialNet,Post),
    getFollow(SocialNet,Follow),
+   followEnLista(Follow,NombreUsuario,Username,Lista,Pivote),
    getShare(SocialNet,Share),
-   append(Follow,[[NombreUsuario, "\n      sigue a: ",Username]],Follow2),
-   SocialNet2 = [NombreRed,FechaS,Register,[],Post,Follow2,Share],!.
+   Pivote == 1,
+   my_last_element(Follow,UltimoFollow),
+   my_last_element(UltimoFollow,UltimoSe),
+   append(UltimoSe,Lista,SeguidoFinal),
+   my_append(UltimoFollow,SeguidoFinal,FollowFinal),
+   followRemplazar(Follow,FollowFinal,FollowF),
+   SocialNet2 = [NombreRed,FechaS,Register,[],Post,FollowF,Share],!;
+   getFollow(SocialNet,Follow3),
+   getName(SocialNet,NombreRed2),
+   getDate(SocialNet,FechaS2),
+   getPost(SocialNet,Post2),
+   getRegister(SocialNet,Register2),
+   getUsuarioA(SocialNet,UsuarioA2),
+   obtenerCola(UsuarioA2,Cola2),
+   obtenerElemento(Cola2,NombreUsuario2),
+   getShare(SocialNet,Share2),
+   Follow1 = [NombreUsuario2,"\n      sigue a: ",[Username]],
+   append(Follow3,[Follow1],Follow2),
+   SocialNet2 = [NombreRed2,FechaS2,Register2,[],Post2,Follow2,Share2],!.
+
+
 
 /*----------------------------------------------------------------
-Predicado socialNetworkRegister: Registra a un nuevo usuario en la
-plataforma.
-Dom: socialNetworw X string X string
+Predicado socialNetworkShare: Predicado que permite a un usuario
+compartir una publicacion.
+Dom: socialNetworw X date X number x list x socialNetwork
 Rec: socialNetworw
 Recursion: Natural
 Ejemplo de uso:
+socialNetworkShare(SocialNet,[10,"/",05,"/",2020],2,["luis"],SocialNet2).
+
  */
 
 socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
@@ -250,11 +273,12 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
 
 
 /*----------------------------------------------------------------
-Predicado socialNetworkRegister: Registra a un nuevo usuario en la
-plataforma.
-Dom: socialNetworw X string X string Rec: socialNetworw
+Predicado socialNetworkToString: Predicado que permite visualizar el
+contenido de la red social cuando hay un usuario activo y cuando no.
+Dom: socialNetworw X socialNetwork
+Rec: socialNetworw
 Recursion: Natural
-Ejemplo de uso:
+Ejemplo de uso: socialNetworkToString(SocialNet,SocialNet2).
  */
 
 
@@ -326,55 +350,76 @@ socialNetworkToString(SocialNet,SocialNet2):-
 elementoEnLista([],_):- false, !.
 elementoEnLista([[_,X,_]|Y],Elemento):- X = Elemento; elementoEnLista(Y,Elemento).
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función shareEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento x string x Lista
+ * Recorrido: Lista
  */
 shareEnLista([],_,_,_):- false, !.
 shareEnLista([[X,_,_,M,N,B,V]|W],Elemento,String,Lista):- X = Elemento,String = M,Lista = [N,B,V]; shareEnLista(W,Elemento,String,Lista).
 
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función idEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento x Lista
+ * Recorrido: Lista
  */
 idEnLista([],_,_):- false, !.
 idEnLista([[X,_,Z,O,_]|W],Elemento,Lista):- X = Elemento,Lista = [X,Z,O]; idEnLista(W,Elemento,Lista).
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
+ /* Función existeUsuario: Verifica si un usuario esta en la lista.
+ * Dominio: Lista x elemento x elemento
  * Recorrido: Booleano
  */
 existeUsuario([],_,_):- false, !.
 existeUsuario([[_,X,Z]|Y],Elemento,Elemento2):- X = Elemento, Z = Elemento2; existeUsuario(Y,Elemento,Elemento2).
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
+/* Función followEnLista: Verifica si un usuario esta en la lista.
+ * Dominio: Lista x elemento x elemento x lista x number
+ * Recorrido: number
+ */
+followEnLista([],_,_,_,Pivote):-!, Pivote is 0.
+followEnLista([[Seguidor,_,_]|Cola],NombreUsuario,Seguido2,Lista,Pivote):- Seguidor = NombreUsuario,Lista = [Seguido2],Pivote is 1; followEnLista(Cola,NombreUsuario,Seguido2,Lista,Pivote).
+
+
+/* Función followRemplazar: Reemplaza un follow si es que existe.
+ * Dominio: Lista x Lista X Lista
+ * Recorrido: Lista
+ */
+followRemplazar([],_,_).
+followRemplazar(Follow,[[Seguidor2,SigueA,Seguido]],Lista):- my_last_element(Follow,Y),obtenerCabeza(Y,Nombre),Nombre = Seguidor2, my_reverse(Follow,[],Follow2),obtenerCola(Follow2,Cola),Lista2 = [[Seguidor2,SigueA,Seguido]|Cola],my_reverse(Lista2,[],Lista) .
+
+
+
+
+ /* Función obtenerCola: Se obtiene la cola de una lista.
  * Dominio: Lista x elemento
- * Recorrido: Booleano
+ * Recorrido: elemento
  */
 obtenerCola([_|X],Elemento):- X = Elemento,!.
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
+ /* Función obtenerElemento: Se obtiene el elmento de una lista.
  * Dominio: Lista x elemento
- * Recorrido: Booleano
+ * Recorrido: elemento
  */
+
 obtenerElemento([X],Elemento):- X = Elemento,!.
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
+ /* Función obtenerCabeza: Se obtiene la cabeza de una lista.
  * Dominio: Lista x elemento
- * Recorrido: Booleano
+ * Recorrido: elemento
  */
+
 obtenerCabeza([X|_],Elemento):- X =Elemento,!.
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función obtenerMedio: Se obtiene la el elemento de al medio y el final de una lista.
+ * Dominio: Lista x elemento x elemento
+ * Recorrido: elemento
  */
+
 obtenerMedio([_,X,C],Elemento1,Elemento2):- X = Elemento1,C = Elemento2,!.
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función lista2String: convierte los elementos de una lista en string.
+ * Dominio: Lista x String
+ * Recorrido: String
  */
 lista2String([],"").
 lista2String([CabezaArch|ColaArch],Lista):-
@@ -385,9 +430,10 @@ lista2String([CabezaArch|ColaArch],Lista):-
 
 
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función post2String: Predicado auxiliar que ayuda a socialNetworkToString.
+ * Dominio: Lista x Lista x String
+ * Recorrido: String.
+
  */
 post2String(Post,_,Lista):-
     Post == [],
@@ -420,9 +466,10 @@ post2String([[CabezaArch,Dia,Nombre,Publicacion,Destinatarios]|ColaArch],Share,L
     string_concat(Strings10,StringDest2,Strings11),string_concat(Strings11,"\n",Strings12),
     post2String(ColaArch,Share,Strings13),string_concat(Strings12,Strings13,Lista),!.
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+  /* Función post2String2: Predicado auxiliar que ayuda a socialNetworkToString.
+ * Dominio: Lista x String x String
+ * Recorrido: String.
+
  */
 post2String2(Post,_,Lista):-
     Post == [],
@@ -440,25 +487,29 @@ post2String2([[CabezaArch,Dia,Nombre,Publicacion,Destinatarios]|Cola],UsuarioAct
     string_concat(String8,"\n",String9),string_concat(String9,"Destinatarios: ",String10),
     string_concat(String10,StringDest,String11),string_concat(String11,"\n",String12),post2String2(Cola,UsuarioActivo,String13),string_concat(String12,String13,Lista),!.
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función register2String: Predicado auxiliar que ayuda a socialNetworkToString.
+ * Dominio: Lista x Lista x Lista x String
+ * Recorrido: String.
+
  */
 
 register2String(_,_,[],"").
-register2String([],Follow2,[_|Colaa],Lista):- register2String(Follow2,Follow2,Colaa,Lista).
-register2String([[NombreSeguidor,SigueA,_]|Cola],Follow2,[Cabeza|Colaa],Lista):-
-    NombreSeguidor \= Cabeza,
-    string_concat(Cabeza,SigueA,String),string_concat(String,"",String2),string_concat(String2,"\n\n",String3),register2String(Cola,Follow2,Colaa,String4),string_concat(String3,String4,Lista).
-register2String([[NombreSeguidor,SigueA,NombreSeguid]|ColaA],Follow2,Register,Lista):-
-    obtenerCabeza(Register,Cabeza),
+register2String([],Follow2,[Cabeza|Colaa],Lista):-
+    string_concat(Cabeza,"\n     sigue a: \n",String),string_concat(String,"",String2),string_concat(String2,"\n\n",String3),register2String(Follow2,Follow2,Colaa,String4),string_concat(String3,String4,Lista).
+register2String([[NombreSeguidor,_,_]|Cola],Follow2,Register,Lista):-
+        obtenerCabeza(Register,Cabeza),
+        NombreSeguidor \= Cabeza,
+        register2String(Cola,Follow2,Register,Lista).
+register2String([[NombreSeguidor,SigueA,NombreSeguid]|ColaA],Follow2,[Cabeza|Colaa],Lista):-
     NombreSeguidor == Cabeza,
-    string_concat(NombreSeguidor,SigueA,String),string_concat(String,NombreSeguid,String2),string_concat(String2,"\n\n",String3),register2String(ColaA,Follow2,Register,String4),string_concat(String3,String4,Lista).
+    verificarVacio2(NombreSeguid,NombreSeguid,StringDest),
+    string_concat(NombreSeguidor,SigueA,String),string_concat(String,StringDest,String2),string_concat(String2,"\n\n",String3),register2String(ColaA,Follow2,Colaa,String4),string_concat(String3,String4,Lista).
 
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+  /* Función follow2String2: Predicado auxiliar que ayuda a socialNetworkToString.
+ * Dominio: Lista x String x String
+ * Recorrido: String.
+
  */
 follow2String2(Follow,_,Lista):-
     Follow == [],
@@ -468,12 +519,14 @@ follow2String2([[Nombre,_,_]|Cola],NombreUsuario,Lista):-
     follow2String2(Cola,NombreUsuario,Lista).
 follow2String2([[Nombre,SigueA,NombreSeguido]|Cola],NombreUsuario,Lista):-
     Nombre == NombreUsuario,
-    string_concat("",SigueA,String),string_concat(String,NombreSeguido,String2),string_concat(String2,"\n\n",String3),follow2String2(Cola,NombreUsuario,String4),string_concat(String3,String4,Lista),!.
+    verificarVacio2(NombreSeguido,NombreSeguido,StringDest),
+    string_concat("",SigueA,String),string_concat(String,StringDest,String2),string_concat(String2,"\n\n",String3),follow2String2(Cola,NombreUsuario,String4),string_concat(String3,String4,Lista),!.
 
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+  /* Función share2String: Predicado auxiliar que ayuda a socialNetworkToString.
+ * Dominio: Lista x String x String
+ * Recorrido: String.
+
  */
 share2String(Post,_,Lista):-
     Post == [],
@@ -492,9 +545,9 @@ share2String([[CabezaArch,NombrePublicador,Publicacion,_,Dia,Nombre,Destinatario
     string_concat(String10,"\n",String11),string_concat(String11,"\n",String12),share2String(Cola,UsuarioActivo,String13),string_concat(String12,String13,Lista),!.
 
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función verificarVacio: Verifica un elemento si no se encuentra nada retorna " Todos".
+ * Dominio: Lista x Lista x String
+ * Recorrido: String
  */
 verificarVacio(ListaI,Igual,ListaF):-
     Igual == [],
@@ -507,9 +560,26 @@ verificarVacio(ListaI,_,ListaF):-
 verificarVacio([Cabeza|Cola],Igual,ListaF):-
     string_concat(Cabeza," ",String),verificarVacio(Cola,Igual,String2),string_concat(String,String2,ListaF),!.
 
+  /* Función verificarVacio2: Verifica un elemento y concatena los que existe en la lista en un string.
+ * Dominio: Lista x Lista x String
+ * Recorrido: String
+ */
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
+verificarVacio2(ListaI,Igual,ListaF):-
+    Igual == [],
+    ListaI == [],
+    !,
+    string_concat(""," ",ListaF),!.
+verificarVacio2(ListaI,_,ListaF):-
+    ListaI == [],
+    string_concat("","",ListaF),!.
+verificarVacio2([Cabeza|Cola],Igual,ListaF):-
+    string_concat(Cabeza," ",String),verificarVacio2(Cola,Igual,String2),string_concat(String,String2,ListaF),!.
+
+
+
+ /* Función existeContacto: Verifica si un contacto esta en la lista.
+ * Dominio: Lista x Lista
  * Recorrido: Booleano
  */
 existeContacto(_,[]):- !.
@@ -517,28 +587,47 @@ existeContacto(Usuarios,[C|T]):-
     member(C,Usuarios),
     existeContacto(Usuarios,T),!.
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función getUsers: Se obtiene una lista de usuarios de una lista de listas.
+ * Dominio: Lista x Lista x Lista
+ * Recorrido: Lista
  */
 getUsers([],Lista,Lista).
 getUsers([[_,User,_]|Us],Lista,[User|Resultado]):-
 	getUsers(Us,Lista,Resultado).
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función sumarDosNumeros: se suman dos numeros.
+ * Dominio: number x number x number
+ * Recorrido: number
  */
 sumarDosNumeros(X,Y,Z):- Z is X + Y.
 
- /* Función elementoEnLista: Verifica si un elemento esta en la lista.
- * Dominio: Lista x elemento
- * Recorrido: Booleano
+ /* Función my_last_element: Se obtiene el ultimo elemento de una lista.
+ * Dominio: Lista x Lista
+ * Recorrido: Lista
  */
 my_last_element([Y], Y).
 
 my_last_element([_|Xs], Y):-
           my_last_element(Xs, Y).
+
+ /* Función my_append: Agrega un elemento nuevo al final de la lista.
+ * Dominio: Lista x Lista x Lista
+ * Recorrido: Lista
+ */
+my_append([NombreSegui,SigueA,_], Lista,ListaFinal):-
+    ListaFinal = [[NombreSegui,SigueA,Lista]].
+
+
+ /* Función my_reverse: Se invierte una lista.
+ * Dominio: Lista x Lista x Lista
+ * Recorrido: Lista
+ */
+
+my_reverse([], Zs, Zs).
+
+my_reverse([X|Xs], Ys, Zs):-
+          my_reverse(Xs, [X|Ys], Zs).
+
 /*
  * ##################### EJEMPLOS DE USO ##########################
  *

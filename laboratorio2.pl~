@@ -185,7 +185,7 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
     obtenerElemento(Cola,NombreUsuario),
     getPost(SocialNet,Post),
     getShare(SocialNet,Share),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "\n      sigue a: ", Username]],Share],!.
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "\n      sigue a: ", [Username]]],Share],!.
  socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getUsuarioA(SocialNet,UsuarioA),
    obtenerCola(UsuarioA,Cola),
@@ -196,9 +196,29 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getDate(SocialNet,FechaS),
    getPost(SocialNet,Post),
    getFollow(SocialNet,Follow),
+   followEnLista(Follow,NombreUsuario,Username,Lista,Pivote),
    getShare(SocialNet,Share),
-   append(Follow,[[NombreUsuario, "\n      sigue a: ",Username]],Follow2),
-   SocialNet2 = [NombreRed,FechaS,Register,[],Post,Follow2,Share],!.
+   Pivote == 1,
+   my_last_element(Follow,UltimoFollow),
+   my_last_element(UltimoFollow,UltimoSe),
+   append(UltimoSe,Lista,SeguidoFinal),
+   my_append(UltimoFollow,SeguidoFinal,FollowFinal),
+   followRemplazar(Follow,FollowFinal,FollowF),
+   SocialNet2 = [NombreRed,FechaS,Register,[],Post,FollowF,Share],!;
+   getFollow(SocialNet,Follow3),
+   getName(SocialNet,NombreRed2),
+   getDate(SocialNet,FechaS2),
+   getPost(SocialNet,Post2),
+   getRegister(SocialNet,Register2),
+   getUsuarioA(SocialNet,UsuarioA2),
+   obtenerCola(UsuarioA2,Cola2),
+   obtenerElemento(Cola2,NombreUsuario2),
+   getShare(SocialNet,Share2),
+   Follow1 = [NombreUsuario2,"\n      sigue a: ",[Username]],
+   append(Follow3,[Follow1],Follow2),
+   SocialNet2 = [NombreRed2,FechaS2,Register2,[],Post2,Follow2,Share2],!.
+
+
 
 /*----------------------------------------------------------------
 Predicado socialNetworkRegister: Registra a un nuevo usuario en la
@@ -348,6 +368,24 @@ idEnLista([[X,_,Z,O,_]|W],Elemento,Lista):- X = Elemento,Lista = [X,Z,O]; idEnLi
 existeUsuario([],_,_):- false, !.
 existeUsuario([[_,X,Z]|Y],Elemento,Elemento2):- X = Elemento, Z = Elemento2; existeUsuario(Y,Elemento,Elemento2).
 
+/* Función elementoEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento
+ * Recorrido: Booleano
+ */
+followEnLista([],_,_,_,Pivote):-!, Pivote is 0.
+followEnLista([[Seguidor,_,_]|Cola],NombreUsuario,Seguido2,Lista,Pivote):- Seguidor = NombreUsuario,Lista = [Seguido2],Pivote is 1; followEnLista(Cola,NombreUsuario,Seguido2,Lista,Pivote).
+
+
+/* Función elementoEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento
+ * Recorrido: Booleano
+ */
+followRemplazar([],_,_).
+followRemplazar(Follow,[[Seguidor2,SigueA,Seguido]],Lista):- my_last_element(Follow,Y),obtenerCabeza(Y,Nombre),Nombre = Seguidor2, my_reverse(Follow,[],Follow2),obtenerCola(Follow2,Cola),Lista2 = [[Seguidor2,SigueA,Seguido]|Cola],my_reverse(Lista2,[],Lista) .
+
+
+
+
  /* Función elementoEnLista: Verifica si un elemento esta en la lista.
  * Dominio: Lista x elemento
  * Recorrido: Booleano
@@ -387,7 +425,10 @@ lista2String([CabezaArch|ColaArch],Lista):-
 
  /* Función elementoEnLista: Verifica si un elemento esta en la lista.
  * Dominio: Lista x elemento
- * Recorrido: Booleano
+ * Recorrido: Booleanomy_reverse([], Zs, Zs).
+
+my_reverse([X|Xs], Ys, Zs):-
+          my_reverse(Xs, [X|Ys], Zs).
  */
 post2String(Post,_,Lista):-
     Post == [],
@@ -446,14 +487,16 @@ post2String2([[CabezaArch,Dia,Nombre,Publicacion,Destinatarios]|Cola],UsuarioAct
  */
 
 register2String(_,_,[],"").
-register2String([],Follow2,[_|Colaa],Lista):- register2String(Follow2,Follow2,Colaa,Lista).
-register2String([[NombreSeguidor,SigueA,_]|Cola],Follow2,[Cabeza|Colaa],Lista):-
-    NombreSeguidor \= Cabeza,
-    string_concat(NombreSeguidor,SigueA,String),string_concat(String,"",String2),string_concat(String2,"\n\n",String3),register2String(Cola,Follow2,Colaa,String4),string_concat(String3,String4,Lista).
-register2String([[NombreSeguidor,SigueA,NombreSeguid]|ColaA],Follow2,Register,Lista):-
-    obtenerCabeza(Register,Cabeza),
+register2String([],Follow2,[Cabeza|Colaa],Lista):-
+    string_concat(Cabeza,"\n     sigue a: \n",String),string_concat(String,"",String2),string_concat(String2,"\n\n",String3),register2String(Follow2,Follow2,Colaa,String4),string_concat(String3,String4,Lista).
+register2String([[NombreSeguidor,_,_]|Cola],Follow2,Register,Lista):-
+        obtenerCabeza(Register,Cabeza),
+        NombreSeguidor \= Cabeza,
+        register2String(Cola,Follow2,Register,Lista).
+register2String([[NombreSeguidor,SigueA,NombreSeguid]|ColaA],Follow2,[Cabeza|Colaa],Lista):-
     NombreSeguidor == Cabeza,
-    string_concat(NombreSeguidor,SigueA,String),string_concat(String,NombreSeguid,String2),string_concat(String2,"\n\n",String3),register2String(ColaA,Follow2,Register,String4),string_concat(String3,String4,Lista).
+    verificarVacio2(NombreSeguid,NombreSeguid,StringDest),
+    string_concat(NombreSeguidor,SigueA,String),string_concat(String,StringDest,String2),string_concat(String2,"\n\n",String3),register2String(ColaA,Follow2,Colaa,String4),string_concat(String3,String4,Lista).
 
 
  /* Función elementoEnLista: Verifica si un elemento esta en la lista.
@@ -468,7 +511,8 @@ follow2String2([[Nombre,_,_]|Cola],NombreUsuario,Lista):-
     follow2String2(Cola,NombreUsuario,Lista).
 follow2String2([[Nombre,SigueA,NombreSeguido]|Cola],NombreUsuario,Lista):-
     Nombre == NombreUsuario,
-    string_concat("",SigueA,String),string_concat(String,NombreSeguido,String2),string_concat(String2,"\n\n",String3),follow2String2(Cola,NombreUsuario,String4),string_concat(String3,String4,Lista),!.
+    verificarVacio2(NombreSeguido,NombreSeguido,StringDest),
+    string_concat("",SigueA,String),string_concat(String,StringDest,String2),string_concat(String2,"\n\n",String3),follow2String2(Cola,NombreUsuario,String4),string_concat(String3,String4,Lista),!.
 
 
  /* Función elementoEnLista: Verifica si un elemento esta en la lista.
@@ -507,6 +551,22 @@ verificarVacio(ListaI,_,ListaF):-
 verificarVacio([Cabeza|Cola],Igual,ListaF):-
     string_concat(Cabeza," ",String),verificarVacio(Cola,Igual,String2),string_concat(String,String2,ListaF),!.
 
+ /* Función elementoEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento
+ * Recorrido: Booleano
+ */
+verificarVacio2(ListaI,Igual,ListaF):-
+    Igual == [],
+    ListaI == [],
+    !,
+    string_concat(""," ",ListaF),!.
+verificarVacio2(ListaI,_,ListaF):-
+    ListaI == [],
+    string_concat("","",ListaF),!.
+verificarVacio2([Cabeza|Cola],Igual,ListaF):-
+    string_concat(Cabeza," ",String),verificarVacio2(Cola,Igual,String2),string_concat(String,String2,ListaF),!.
+
+
 
  /* Función elementoEnLista: Verifica si un elemento esta en la lista.
  * Dominio: Lista x elemento
@@ -539,6 +599,21 @@ my_last_element([Y], Y).
 
 my_last_element([_|Xs], Y):-
           my_last_element(Xs, Y).
+
+ /* Función elementoEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento
+ * Recorrido: Booleano
+ */
+
+my_append([NombreSegui,SigueA,_], Lista,ListaFinal):-
+    ListaFinal = [[NombreSegui,SigueA,Lista]].
+
+
+my_reverse([], Zs, Zs).
+
+my_reverse([X|Xs], Ys, Zs):-
+          my_reverse(Xs, [X|Ys], Zs).
+
 /*
  * ##################### EJEMPLOS DE USO ##########################
  *
