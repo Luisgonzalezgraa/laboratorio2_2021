@@ -4,7 +4,7 @@
  * Name = string. date = lista de enteros.
 */
 socialNetwork(Name,Date,SOut):-
-    SOut = [Name,Date,[],[],[],[],[]].
+    SOut = [Name,Date,[],[],[],[],[],[]].
 
 
 /*TDA socialNetwork: Lista de enteros con el dia el mes y el a駉.
@@ -26,13 +26,15 @@ getUsuarioA([_|[_|[_|[UsuarioA|_]]]],UsuarioA).
 getPost([_|[_|[_|[_|[Post|_]]]]],Post).
 getFollow([_|[_|[_|[_|[_|[Follow|_]]]]]],Follow).
 getShare([_|[_|[_|[_|[_|[_|[Share|_]]]]]]],Share).
+getComment([_|[_|[_|[_|[_|[_|[_|[Comment|_]]]]]]]],Comment).
+
 
 
 
 %-------------------------------------
 %############BASE DE CONOCIMIENTOS: RED SOCIAL##################
 %socialNetwork("Facebook",[5,10,2020],SocialNetwork1):-
-    %SocialNetwork1 = [[["luis","pass"],["karla","pass2"],["javiera","pass3"],["marco","pass4"]],[],[[1,[9,12,2019],"luis","primer post para todos",[]],[2,[9,12,2019],"luis","post para karla y javiera",[karla,javiera]],[3,[9,12,2019],"karla","primer post para luis",[luis]]],[["luis"," sigue a","karla"]],[["luis", "\n      sigue a: ", ["karla", "javiera"]], ["javiera", "\n      sigue a: ", ["luis"]]][[1, "luis", "primer post para todos", "Compartido: \n", [5, "/", 10,"/",2021], "javiera", ["karla"]]]].
+    %SocialNetwork1 = [[["luis","pass"],["karla","pass2"],["javiera","pass3"],["marco","pass4"]],[],[[1,[9,12,2019],"luis","primer post para todos",[]],[2,[9,12,2019],"luis","post para karla y javiera",[karla,javiera]],[3,[9,12,2019],"karla","primer post para luis",[luis]]],[["luis"," sigue a","karla"]],[["luis", "\n      sigue a: ", ["karla", "javiera"]], ["javiera", "\n      sigue a: ", ["luis"]]],[[1, "luis", "primer post para todos", "Compartido: \n", [5, "/", 10,"/",2021], "javiera", ["karla"]]]].
 %-------------------------------------
 
 /*----------------------------------------------------------------
@@ -51,9 +53,10 @@ socialNetworkRegister(ListaI,Fecha,Name,Password,Lista2):-
     getFollow(ListaI,Follow),
     getShare(ListaI,Share),
     getDate(ListaI,Date),
+    getComment(ListaI,Comment),
     Registro == [],
      !,
-    Lista2 = [NameSocial,Date,[[Fecha,Name,Password]],UsuarioA,Posteo,Follow,Share].
+    Lista2 = [NameSocial,Date,[[Fecha,Name,Password]],UsuarioA,Posteo,Follow,Share,Comment].
 socialNetworkRegister(SocialNet,FechaInicio,Name,Password,SocialNet2):-
     getRegister(SocialNet,Registro),
     not(elementoEnLista(Registro,Name)),
@@ -63,9 +66,10 @@ socialNetworkRegister(SocialNet,FechaInicio,Name,Password,SocialNet2):-
     getPost(SocialNet,Posteo),
     getFollow(SocialNet,Follow),
     getShare(SocialNet,Share),
+    getComment(SocialNet,Comment),
     registroUsuario(FechaInicio,Name,Password,ListaUsuario),
     append(Registro,[ListaUsuario],Registro2),!,
-    SocialNet2 = [NombreRed,Fecha,Registro2,UsuarioA,Posteo,Follow,Share].
+    SocialNet2 = [NombreRed,Fecha,Registro2,UsuarioA,Posteo,Follow,Share,Comment].
 
 
 /*----------------------------------------------------------------
@@ -92,8 +96,9 @@ socialNetworkLogin(SocialNet,Name,Password,SocialNet2):-
     getPost(SocialNet,Posteo),
     getFollow(SocialNet,Follow),
     getShare(SocialNet,Share),
+    getComment(SocialNet,Comment),
     append(UsuarioA,["Usuario Activo",Name],UsuarioActivo),!,
-    SocialNet2 =[NombreRed,Fecha,Registro,UsuarioActivo,Posteo,Follow,Share].
+    SocialNet2 =[NombreRed,Fecha,Registro,UsuarioActivo,Posteo,Follow,Share,Comment].
 
 
 
@@ -129,7 +134,8 @@ socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getDate(SocialNet,FechaS),
     getFollow(SocialNet,Follow),
     getShare(SocialNet,Share),
-    SocialNet2 = [NombreRed,FechaS, Registro,[],[[1,Fecha,NombreUsuario,Contenido,ListaUsuarios]],Follow,Share],!.
+    getComment(SocialNet,Comment),
+    SocialNet2 = [NombreRed,FechaS, Registro,[],[[1,Fecha,NombreUsuario,Contenido,ListaUsuarios]],Follow,Share,Comment],!.
 
 socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     getRegister(SocialNet,Registro),
@@ -147,8 +153,9 @@ socialNetworkPost(SocialNet,Fecha,Contenido,ListaUsuarios,SocialNet2):-
     my_last_element(Post,ListaNu),
     obtenerCabeza(ListaNu,Numero),
     sumarDosNumeros(Numero,1,NumeroFinal),
+    getComment(SocialNet,Comment),
     append(Post,[[NumeroFinal,Fecha,NombreUsuario,Contenido,ListaUsuarios]],PostFinal),
-    SocialNet2 = [NombreRed,FechaS, Registro,[],PostFinal,Follow,Share],!.
+    SocialNet2 = [NombreRed,FechaS, Registro,[],PostFinal,Follow,Share,Comment],!.
 
 /*----------------------------------------------------------------
 Predicado socialNetworkFollow: Predicado que sirve para que un usuario
@@ -186,7 +193,8 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
     obtenerElemento(Cola,NombreUsuario),
     getPost(SocialNet,Post),
     getShare(SocialNet,Share),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "\n      sigue a: ", [Username]]],Share],!.
+    getComment(SocialNet,Comment),
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,[[NombreUsuario, "\n      sigue a: ", [Username]]],Share,Comment],!.
  socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getUsuarioA(SocialNet,UsuarioA),
    obtenerCola(UsuarioA,Cola),
@@ -197,6 +205,7 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
    getDate(SocialNet,FechaS),
    getPost(SocialNet,Post),
    getFollow(SocialNet,Follow),
+   getComment(SocialNet,Comment),
    followEnLista(Follow,NombreUsuario,Username,Lista,Pivote),
    getShare(SocialNet,Share),
    Pivote == 1,
@@ -205,7 +214,7 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
    append(UltimoSe,Lista,SeguidoFinal),
    my_append(UltimoFollow,SeguidoFinal,FollowFinal),
    followRemplazar(Follow,FollowFinal,FollowF),
-   SocialNet2 = [NombreRed,FechaS,Register,[],Post,FollowF,Share],!;
+   SocialNet2 = [NombreRed,FechaS,Register,[],Post,FollowF,Share,Comment],!;
    getFollow(SocialNet,Follow3),
    getName(SocialNet,NombreRed2),
    getDate(SocialNet,FechaS2),
@@ -215,9 +224,10 @@ socialNetworkFollow(SocialNet,Username,SocialNet2):-
    obtenerCola(UsuarioA2,Cola2),
    obtenerElemento(Cola2,NombreUsuario2),
    getShare(SocialNet,Share2),
+   getComment(SocialNet,Comment2),
    Follow1 = [NombreUsuario2,"\n      sigue a: ",[Username]],
    append(Follow3,[Follow1],Follow2),
-   SocialNet2 = [NombreRed2,FechaS2,Register2,[],Post2,Follow2,Share2],!.
+   SocialNet2 = [NombreRed2,FechaS2,Register2,[],Post2,Follow2,Share2,Comment2],!.
 
 
 
@@ -244,12 +254,13 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     getDate(SocialNet,FechaS),
     getRegister(SocialNet,Registro),
     getUsers(Registro,[],Registro2),
+    getComment(SocialNet,Comment),
     existeContacto(Registro2,Destinatarios),
     getFollow(SocialNet,Follow),
     getUsuarioA(SocialNet,UsuarioA),
     obtenerCola(UsuarioA,Cola),
     obtenerElemento(Cola,NombreUsuario),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,[[Cabeza,NombrePosteador,Publi,"Compartido: \n",Fecha,NombreUsuario,Destinatarios]] ],!.
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,[[Cabeza,NombrePosteador,Publi,"Compartido: \n",Fecha,NombreUsuario,Destinatarios]],Comment],!.
 socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     getShare(SocialNet,Share),
     getPost(SocialNet,Post),
@@ -261,6 +272,7 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     existeContacto(Registro2,Destinatarios),
     getFollow(SocialNet,Follow),
     getShare(SocialNet,Share),
+    getComment(SocialNet,Comment),
     getUsuarioA(SocialNet,UsuarioA),
     obtenerCola(UsuarioA,Cola),
     obtenerElemento(Cola,NombreUsuario),
@@ -268,7 +280,7 @@ socialNetworkShare(SocialNet,Fecha,PostId,Destinatarios,SocialNet2):-
     obtenerMedio(ListaContenidoPost,NombrePosteador,Publi),
     ShareF = [Cabeza,NombrePosteador,Publi,"Compartido: \n",Fecha,NombreUsuario,Destinatarios],
     append(Share,[ShareF],ShareFinal),
-    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,ShareFinal],!.
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,ShareFinal,Comment],!.
 
 
 
@@ -294,6 +306,7 @@ socialNetworkToString(SocialNet,SocialNet2):-
     getFollow(SocialNet,Follow2),
     getPost(SocialNet,Post),
     getShare(SocialNet,Share),
+    getComment(SocialNet,Comment),
     lista2String(Date,DateString),
     string_concat("\n#### Nombre de la red social: ",NombreRed,String1),string_concat(String1," ####\n",String2),
     string_concat(String2,"####Creaci髇 de la red social: ",String3),string_concat(String3,DateString,String4),
@@ -305,7 +318,13 @@ socialNetworkToString(SocialNet,SocialNet2):-
     string_concat(String8,"**************PUBLICACIONES*********************\n",String9),
     post2String(Post,Share,PostString),
     string_concat(String9,PostString,String10),
-    string_concat(String10,"*************FIN PUBLICACIONES*****************\n",SocialNet2),!.
+    string_concat(String10,"*************FIN PUBLICACIONES*****************\n",String11),
+    string_concat(String11,"------------------------------------------------\n",String12),
+    string_concat(String12,"**************COMENTARIOS*********************\n",String13),
+    comment2String(Comment,StringL),
+    string_concat(String13,StringL,String14),
+    string_concat(String14,"*************FIN COMENTARIOS*****************\n",SocialNet2),
+    !.
 
 socialNetworkToString(SocialNet,SocialNet2):-
     getUsuarioA(SocialNet,UsuarioA),
@@ -316,6 +335,7 @@ socialNetworkToString(SocialNet,SocialNet2):-
     getFollow(SocialNet,Follow),
     getPost(SocialNet,Post),
     getShare(SocialNet,Share),
+    getComment(SocialNet,Comment),
     lista2String(Date,DateString),
     string_concat("\n#### Nombre de la red social: ",NombreRed,String1),string_concat(String1," ####\n",String2),
     string_concat(String2,"####Creaci髇 de la red social: ",String3),string_concat(String3,DateString,String4),
@@ -333,7 +353,86 @@ socialNetworkToString(SocialNet,SocialNet2):-
     share2String(Share,Usuario,ShareString),
     string_concat(String13,ShareString,String14),
     string_concat(String14,"**************FIN PUBLICACIONES COMPARTIDAS*********************\n",String15),
-    string_concat(String15,"------------------------------------------------\n",SocialNet2).
+    string_concat(String15,"------------------------------------------------\n",String16),
+    string_concat(String16,"**************COMENTARIOS*********************\n",String17),
+    comment2String2(Comment,Usuario,StringList),
+    string_concat(String17,StringList,String18),
+    string_concat(String18,"**************FIN COMENTARIOS*********************\n",SocialNet2),
+    !.
+
+
+
+
+
+/* ------------------------------------------------------------------------
+Predicado socialNetworkToString: Predicado que permite visualizar el
+contenido de la red social cuando hay un usuario activo y cuando no.
+Dom: socialNetworw X socialNetwork
+Rec: socialNetworw
+Recursion: Natural
+Ejemplo de uso: socialNetworkToString(SocialNet,SocialNet2).
+ */
+comment(SocialNet, Fecha, PostId, CommentId, TextoComentario, SocialNet2):-
+    getComment(SocialNet,Comment),
+    CommentId == 0,
+    Comment == [],
+    !,
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,FechaS),
+    getRegister(SocialNet,Registro),
+    getPost(SocialNet,Post),
+    getFollow(SocialNet,Follow),
+    getShare(SocialNet,Share),
+    getUsuarioA(SocialNet,UsuarioA),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
+    idEnLista(Post,PostId,ListaContenidoPost),
+    obtenerCabeza(ListaContenidoPost,Cabeza),
+    obtenerMedio(ListaContenidoPost,NombrePosteador,Publi),
+    Lista = [Cabeza,Publi,NombrePosteador,1,NombreUsuario,Fecha, TextoComentario],
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,Share,[Lista]],!.
+comment(SocialNet, Fecha, PostId, CommentId, TextoComentario, SocialNet2):-
+    getComment(SocialNet,Comment),
+    getName(SocialNet,NombreRed),
+    getDate(SocialNet,FechaS),
+    getRegister(SocialNet,Registro),
+    getPost(SocialNet,Post),
+    getFollow(SocialNet,Follow),
+    getShare(SocialNet,Share),
+    getUsuarioA(SocialNet,UsuarioA),
+    obtenerCola(UsuarioA,Cola),
+    obtenerElemento(Cola,NombreUsuario),
+    CommentId == 0,
+    idEnLista(Post,PostId,ListaContenidoPost),
+    obtenerCabeza(ListaContenidoPost,Cabeza),
+    obtenerMedio(ListaContenidoPost,NombrePosteador,Publi),
+    my_last_element(Comment,UltimoComment),
+    obtenerID(UltimoComment,Numero),
+    sumarDosNumeros(Numero,1,NumeroFinal),
+    Lista = [Cabeza,Publi,NombrePosteador,NumeroFinal,NombreUsuario,Fecha, TextoComentario],
+    append(Comment,[Lista],CommentFinal),
+    SocialNet2 = [NombreRed,FechaS,Registro,[],Post,Follow,Share,CommentFinal],
+    !;
+    getComment(SocialNet,Comment2),
+    getName(SocialNet,NombreRed2),
+    getDate(SocialNet,FechaS2),
+    getRegister(SocialNet,Registro2),
+    getPost(SocialNet,Post2),
+    getFollow(SocialNet,Follow2),
+    getShare(SocialNet,Share2),
+    getUsuarioA(SocialNet,UsuarioA2),
+    obtenerCola(UsuarioA2,Cola2),
+    obtenerElemento(Cola2,NombreUsuario2),
+    obtenerIDcomment(Comment2,CommentId,ListaComment),
+    obtenerCabeza(ListaComment,NombreUsuari),
+    obtenerMedio(ListaComment,_,Comentario),
+    my_last_element(Comment2,UltimoComment2),
+    obtenerID(UltimoComment2,Numero2),
+    sumarDosNumeros(Numero2,1,NumeroFinal2),
+    Lista2 = [Numero2,Comentario,NombreUsuari,NumeroFinal2,NombreUsuario2,Fecha,TextoComentario],
+    append(Comment2,[Lista2],CommentFinal2),
+    SocialNet2 = [NombreRed2,FechaS2,Registro2,[],Post2,Follow2,Share2,CommentFinal2],
+    !.
 
 
 
@@ -341,8 +440,9 @@ socialNetworkToString(SocialNet,SocialNet2):-
 
 
 
-% ------------------------------------------------------------------------
 
+
+%---------------------------------------------------------------------
  /* Funci贸n elementoEnLista: Verifica si un elemento esta en la lista.
  * Dominio: Lista x elemento
  * Recorrido: Booleano
@@ -364,6 +464,24 @@ shareEnLista([[X,_,_,M,N,B,V]|W],Elemento,String,Lista):- X = Elemento,String = 
  */
 idEnLista([],_,_):- false, !.
 idEnLista([[X,_,Z,O,_]|W],Elemento,Lista):- X = Elemento,Lista = [X,Z,O]; idEnLista(W,Elemento,Lista).
+
+ /* Funci贸n idEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento x Lista
+ * Recorrido: Lista
+ */
+obtenerID([],_):- false, !.
+obtenerID([_,_,_,X,_,_,_],Elemento):- X = Elemento.
+
+
+/* Funci贸n idEnLista: Verifica si un elemento esta en la lista.
+ * Dominio: Lista x elemento x Lista
+ * Recorrido: Lista
+ */
+obtenerIDcomment([],_,_):- false, !.
+obtenerIDcomment([[_,_,_,X,Y,S,D]|W],Elemento,Lista):- X = Elemento,Lista = [Y,S,D];obtenerIDcomment(W,Elemento,Lista).
+
+
+
 
  /* Funci贸n existeUsuario: Verifica si un usuario esta en la lista.
  * Dominio: Lista x elemento x elemento
@@ -424,6 +542,48 @@ obtenerMedio([_,X,C],Elemento1,Elemento2):- X = Elemento1,C = Elemento2,!.
 lista2String([],"").
 lista2String([CabezaArch|ColaArch],Lista):-
     string_concat("",CabezaArch,String),lista2String(ColaArch,String2),string_concat(String,String2,Lista).
+
+  /* Funci贸n post2String2: Predicado auxiliar que ayuda a socialNetworkToString.
+ * Dominio: Lista x String x String
+ * Recorrido: String.
+[Numero2,Comentario,NombreUsuari,NumeroFinal2,NombreUsuario2,Fecha,TextoComentario]
+ */
+comment2String(Comment,Lista):-
+    Comment == [],
+    string_concat("\n","\n",Lista),!.
+comment2String([[Numero2,Comentario,NombreUsuari,NumeroFinal2,NombreUsuario2,Fecha,TextoComentario]|Cola],Lista):-
+    lista2String(Fecha,Date),
+    string_concat("ID al que se comenta: ",Numero2,String),
+    string_concat(String,"\nTexto que se comenta: ",String4),string_concat(String4,Comentario,String5),string_concat(String5,"\nNombre Creador: ",String6),
+    string_concat(String6,NombreUsuari,String7),string_concat(String7,"\nID comentario: ",String8),
+    string_concat(String8,NumeroFinal2,String9),string_concat(String9,"\nNombre del comentarista: ",String10),
+    string_concat(String10,NombreUsuario2,String11),string_concat(String11,"\nFecha del Comentario: ",String13),
+    string_concat(String13,Date,String14),
+    string_concat(String14,"\nComentario: ",String15),string_concat(String15,TextoComentario,String16),string_concat(String16,"\n\n",String17),comment2String(Cola,String18),string_concat(String17,String18,Lista),!.
+
+
+
+/* Funci贸n post2String2: Predicado auxiliar que ayuda a socialNetworkToString.
+ * Dominio: Lista x String x String
+ * Recorrido: String.
+[Numero2,Comentario,NombreUsuari,NumeroFinal2,NombreUsuario2,Fecha,TextoComentario]
+ */
+comment2String2(Comment,_,Lista):-
+    Comment == [],
+    string_concat("\n","\n",Lista),!.
+comment2String2([[_,_,_,_,NombreUsuario2,_,_]|Cola],UsuarioActivo,Lista):-
+    NombreUsuario2 \= UsuarioActivo,
+   comment2String2(Cola,UsuarioActivo,Lista).
+comment2String2([[Numero2,Comentario,NombreUsuari,NumeroFinal2,NombreUsuario2,Fecha,TextoComentario]|Cola],Usuario,Lista):-
+    lista2String(Fecha,Date),
+    NombreUsuario2 == Usuario,
+    string_concat("ID al que se comenta: ",Numero2,String),
+    string_concat(String,"\nTexto que se comenta: ",String4),string_concat(String4,Comentario,String5),string_concat(String5,"\nNombre Creador: ",String6),
+    string_concat(String6,NombreUsuari,String7),string_concat(String7,"\nID comentario: ",String8),
+    string_concat(String8,NumeroFinal2,String9),string_concat(String9,"\nNombre del comentarista: ",String10),
+    string_concat(String10,NombreUsuario2,String11),string_concat(String11,"\nFecha del Comentario: ",String13),
+    string_concat(String13,Date,String14),
+    string_concat(String14,"\nComentario: ",String15),string_concat(String15,TextoComentario,String16),string_concat(String16,"\n\n",String17),comment2String2(Cola,Usuario,String18),string_concat(String17,String18,Lista),!.
 
 
 
